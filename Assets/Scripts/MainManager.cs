@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -12,20 +13,33 @@ public class MainManager : MonoBehaviour
 
     public Text ScoreText;
     public GameObject GameOverText;
-    
+
+    public GameObject setNameCanvas;
+    public GameObject bestScoreText;
+    public GameObject restartButton;
+    public Text bestScoreTextDefault;
+    public TMP_InputField nameInput;
+
+    private static int BEST_SCORE = 0;
+    private static string BEST_NAME = "Alex";
+
     private bool m_Started = false;
     private int m_Points;
-    
+
     private bool m_GameOver = false;
 
-    
+
     // Start is called before the first frame update
     void Start()
     {
+        bestScoreTextDefault.text = $"Best Score : {BEST_NAME} : {BEST_SCORE}";
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
-        
-        int[] pointCountArray = new [] {1,1,2,2,5,5};
+
+        restartButton.GetComponent<Button>().onClick.AddListener(ButtonListener);
+        nameInput.onEndEdit.AddListener(InputFieldListener);
+
+        int[] pointCountArray = new[] { 1, 1, 2, 2, 5, 5 };
         for (int i = 0; i < LineCount; ++i)
         {
             for (int x = 0; x < perLine; ++x)
@@ -53,13 +67,6 @@ public class MainManager : MonoBehaviour
                 Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
             }
         }
-        else if (m_GameOver)
-        {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-            }
-        }
     }
 
     void AddPoint(int point)
@@ -71,6 +78,30 @@ public class MainManager : MonoBehaviour
     public void GameOver()
     {
         m_GameOver = true;
-        GameOverText.SetActive(true);
+
+        if (m_Points > BEST_SCORE)
+        {
+            setNameCanvas.SetActive(true);
+
+            BEST_SCORE = m_Points;
+            bestScoreText.GetComponent<Text>().text = $"You set new best score! {m_Points}";
+            bestScoreText.SetActive(true);
+        }
+        else
+        {
+            GameOverText.SetActive(true);
+            restartButton.SetActive(true);
+        }
+    }
+
+    private void ButtonListener()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    private void InputFieldListener(string name)
+    {
+        BEST_NAME = name;
+        bestScoreTextDefault.text = $"Best Score : {name} : {BEST_SCORE}";
     }
 }
